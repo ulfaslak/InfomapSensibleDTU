@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>D3 Test</title>
+		<script type="text/javascript" src="d3/d3.v3.js"></script>
+		<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+
+		<style type="text/css"></style>
+		<style type="text/css">
+
+			rect {
+					fill: teal;
+					stroke-width: 2;
+					opacity: 1.0;
+				}
+
+			.d3-tip {
+					line-height: 1;
+					font-weight: bold;
+					padding: 12px;
+					background: rgba(0, 0, 0, 0.8);
+					color: #fff;
+					border-radius: 2px;
+				}
+
+			/* Creates a small triangle extender for the tooltip */
+			.d3-tip:after {
+					box-sizing: border-box;
+					display: inline;
+					font-size: 10px;
+					width: 100%;
+					line-height: 1;
+					color: rgba(0, 0, 0, 0.8);
+					content: "\25BC";
+					position: absolute;
+					text-align: center;
+			}
+
+			/* Style northward tooltips differently */
+			.d3-tip.n:after {
+					margin: -1px 0 0 0;
+					top: 100%;
+					left: 0;
+			}
+
+
+		</style>
+	</head>
+	<body>
+		<script type="text/javascript">
+
+// Canvas parameters
+var w = 800;
+var h = 1500;
+var padding = 0;
+
+
+var inert = false
+var clicked
+
+
+
+var svg = d3.select("body")
+	.append("svg")
+	.attr("width", w)
+	.attr("height", h);
+
+
+d3.json("data/dataset2.json", function(dataset) {
+
+	visualizeit(dataset)
+});
+
+
+
+var visualizeit = function(dataset) {
+
+	var tip = d3.tip()
+		.attr('class', 'd3-tip')
+		.offset([-10, 0])
+		.html(function(d) {
+			return "<strong>Frequency:</strong> <span style='color:red'>" 
+				+ d.frequency + "</span>";
+		})
+
+	svg.call(tip);
+
+	var over = function(d) {
+		label_clicked = d['c']
+
+		d3.selectAll("."+label_clicked)
+		  .transition()
+	  	  .duration(100)
+		  .style({'opacity': 1.0})
+
+		for (var c = 0; c < communities.length; c++) {
+			label_other = communities[c]
+			sim = dataset['sims'][label_clicked][label_other]
+			if (sim > 0) {
+				d3.selectAll("."+label_other)
+				  .transition()
+			  	  .duration(50)
+				  .style({'opacity': scaleS(sim)})
+			} else {
+				d3.selectAll("."+label_other)
+				  .transition()
+			  	  .duration(50)
+				  .style({'opacity': 0.03})
+			}
+		}
+	}
+
+	var out = function(d) {
+		d3.selectAll("rect")
+		  .transition()
+	  	  .duration(100)
+		  .style({'opacity': 1.0})
+	}
+
+
+	var ds_width = dataset['meta']['w']
+	var ds_height = dataset['meta']['h']
+
+	var scaleX = d3.scale.linear()
+					.domain([0, ds_width])
+					.range([padding, w-padding]);
+
+	var scaleY = d3.scale.linear()
+					.domain([0, ds_height])
+					.range([padding, h-padding]);
+
+	var scaleS = d3.scale.linear()
+					.domain([0, 1])
+					.range([0.1, 1]);
+
+	communities = d3.keys(dataset['coms'])
+
+	for (var i = 0; i < communities.length; i++) {
+		label = communities[i];
+		data = dataset['coms'][label]['blocks'];
+		color = dataset['coms'][label]['color'];
+/*
+		// Add text labels
+		svg.selectAll(label)
+		.data(data)
+		.enter()
+		.append("text")
+		.text(function(d) { return d['c']; })
+		.attr('x', function(d) { return scaleX(d['x']); })
+		.attr('y', function(d) { return scaleY(d['y']); })
+		.attr("fill", "black")
+		.attr("font-family", "helvetica")
+		.attr("font-size", 10);
+*/
+		// Add rectangles
+		tmp = svg.selectAll(label)
+		.data(data)
+		.enter()
+		.append("rect")
+		.attr("class", label)
+		.style({'stroke': color})
+
+		tmp = tmp
+		.attr('width', function(d) { return scaleX(d['w']); })
+		.attr('height', function(d) { return scaleY(d['h']); })
+		.attr('x', function(d) { return scaleX(d['x']); })
+		.attr('y', function(d) { return scaleY(d['y']); })
+		
+		tmp = tmp
+		.on('click', function(d) {
+			if (inert==true) { 
+				if (d['c'] == clicked) {
+					inert = false; 
+				}
+				clicked = d['c']
+			} else 
+			if (inert==false) { 
+				inert = true;
+				clicked = d['c']
+			}
+			
+			over(d)
+
+		})
+		.on('mouseout', function(d) { if (inert==false) { out(d) } } )
+		.on('mouseover', function(d) { if (inert==false) { over(d) } } )
+	}
+
+	
+}
+
+				 		 
+
+
+
+
+
+
+
+		</script>
+	</body>
+</html>
