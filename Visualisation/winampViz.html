@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>D3 Test</title>
+		<script type="text/javascript" src="d3/d3.v3.js"></script>
+		<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+		<style type="text/css"></style>
+		<style type="text/css">
+
+			rect {
+					fill: #34495e;
+					stroke-width: 0;
+					opacity: 0.8;
+				}
+
+			.d3-tip {
+					line-height: 1;
+					font-weight: bold;
+					padding: 12px;
+					background: rgba(0, 0, 0, 0.8);
+					color: #fff;
+					border-radius: 2px;
+				}
+
+			/* Creates a small triangle extender for the tooltip */
+			.d3-tip:after {
+					box-sizing: border-box;
+					display: inline;
+					font-size: 10px;
+					width: 100%;
+					line-height: 1;
+					color: rgba(0, 0, 0, 0.8);
+					content: "\25BC";
+					position: absolute;
+					text-align: center;
+			}
+
+			/* Style northward tooltips differently */
+			.d3-tip.n:after {
+					margin: -1px 0 0 0;
+					top: 100%;
+					left: 0;
+			}
+
+
+		</style>
+	</head>
+	<body>
+		<script type="text/javascript">
+
+// Canvas parameters
+var w = 800;
+var h = 1060;
+var padding = 10;
+
+// Define global mode parameters
+var inert = false
+var clicked
+
+// Define svg canvas. Everything will be drawn on this
+var svg = d3.select("body")
+	.append("svg")
+	.attr("width", w)
+	.attr("height", h);
+
+
+// Load dataset and run main function inside
+d3.json("data/dataset3.json", function(dataset) {
+	visualizeit(dataset)
+});
+
+
+// Main function
+var visualizeit = function(dataset) {
+
+	/////////////////////////////
+	// Define tooltip behavior //
+	/////////////////////////////
+
+	// Tooltip behavior for normal mode
+	tip1 = d3.tip().attr('class', 'd3-tip')
+		.offset([-12,0])
+		.html(function(d) { return "Community id: "
+			+ d['c'].slice(1,d['c'].length) + "<br>"
+			+ "Members: " + d['w']; 
+		});
+
+	// Tooltip behavior for inert mode
+	tip2 = d3.tip().attr('class', 'd3-tip')
+		.attr('background', 'rgba(0,0,0,0.3')
+		.offset([-12,0])
+		.html(function(d) { return "Similarity: "
+			+ Math.round( 1000*dataset['sims'][label_clicked][d['c']]['sim']) / 10 + "%"
+			+ "<br>" + "In common: "
+			+ dataset['sims'][label_clicked][d['c']]['count']; 
+		});
+
+	svg.call(tip1)
+	svg.call(tip2)
+
+
+	///////////////////////////////////////////
+	// Define hovering and clicking behavior //
+	///////////////////////////////////////////
+
+	var over = function(d) {
+		label_clicked = d['c']
+
+		d3.selectAll("."+label_clicked)
+		  .transition()
+	  	  .duration(100)
+		  .style({'opacity': 0.8})
+
+		for (var c = 0; c < communities.length; c++) {
+			label_other = communities[c]
+			sim = dataset['sims'][label_clicked][label_other]['sim']
+			if (sim > 0) {
+				d3.selectAll("."+label_other)
+				  .transition()
+			  	  .duration(100)
+				  .style({'opacity': scaleS(sim)})
+			} else {
+				d3.selectAll("."+label_other)
+				  .transition()
+			  	  .duration(100)
+				  .style({'opacity': 0.01})
+			}
+		}
+
+		if (inert==true) {
+			tip1.show(d)
+			tip2.hide(d)
+		}
+	}
+
+	var overInert = function(d) {
+		if (d['c'] != label_clicked) {
+			if (dataset['sims'][label_clicked][d['c']]['sim'] != 0) {
+				tip2.show(d)
+			}
+		}
+	}
+
+	var out = function(d) {
+		d3.selectAll("rect")
+		  .transition()
+	  	  .duration(100)
+		  .style({'opacity': 0.8})
+
+		tip1.hide(d)
+		tip2.hide(d)
+	}
+
+	var outInert = function(d) {
+		if (d['c'] != label_clicked) {
+			tip2.hide(d)
+		}
+	}
+
+	var click = function(d) {
+		inert = true;
+		clicked = d['c']
+		tip1.show(d)
+	}
+
+	var clickInert = function(d) {
+		clicked = d['c']
+		if (d['c'] == label_clicked) {
+			tip1.show(d)
+		}
+	}
+
+
+	// Set pretty background indicating night and day
+	var gradient = svg.append("svg:defs")
+	  .append("svg:linearGradient")
+	    .attr("id", "gradient")
+	    .attr("x1", "1%")
+	    .attr("y1", "0%")
+	    .attr("x2", "1%")
+	    .attr("y2", "100%")
+	    .attr("x3", "1%")
+	    .attr("y3", "100%")
+	    .attr("spreadMethod", "pad")
+
+	var night_color = "rgb(103, 128, 159)"
+	var day_color = "rgb(253, 227, 167)"
+	var gradient_colors = [
+			{'offset': '0%', 'stop-color': night_color},
+			{'offset': '50%', 'stop-color': day_color},
+			{'offset': '100%', 'stop-color': night_color}
+		]
+
+	for (i=0; i<3; i++) {
+		gradient.append("svg:stop")
+	    .attr(gradient_colors[i])
+	    .attr("stop-opacity", 1);
+	}
+
+	svg.append("svg:rect")
+	    .attr("width", w)
+	    .attr("height", h)
+	    .style("fill", "url(#gradient)");
+
+	// Set background click to exit inert mode
+	svg.selectAll("background")
+		.data([w,h])
+		.enter()
+		.append("rect")
+		.style('width', function(d) { return w; })
+		.style('height', function(d) { return h; })
+		.style('fill', 'white')
+		.style('fill-opacity', 0.0)
+		.on("click", function(d) { 
+			console.log(inert)
+			out(d)
+			inert = false });
+
+	// Set esc-key to exit inert mode
+	$(document).keyup(function(e) {
+	  if (e.keyCode == 27) {
+		console.log(inert)
+		out(clicked)
+		inert = false 
+	  }
+	});
+
+
+	////////////////////////////////
+	// Draw on canvas (main code) //
+	////////////////////////////////
+
+	var ds_width = dataset['meta']['w']
+	var ds_height = dataset['meta']['h']
+
+	var scaleX = d3.scale.linear()
+					.domain([0, ds_width])
+					.range([0, w]);
+
+	var scaleY = d3.scale.linear()
+					.domain([0, ds_height])
+					.range([0, h]);
+
+	var scaleXC = d3.scale.linear()
+					.domain([0, ds_width])
+					.range([padding, w-padding]);
+
+	var scaleYC = d3.scale.linear()
+					.domain([0, ds_height])
+					.range([padding, h-padding]);
+
+	var scaleS = d3.scale.sqrt()
+					.domain([0, 1])
+					.range([0.05, 0.8]);
+
+	// Loop over communities and draw them one at a time, adding hover and clicking behavior.
+	communities = d3.keys(dataset['coms'])
+
+	for (var i = 0; i < communities.length; i++) {
+		label = communities[i];
+		data = dataset['coms'][label]['blocks'];
+		color = dataset['coms'][label]['color'];
+
+		// Add rectangles
+		tmp = svg.selectAll(label)
+		.data(data)
+		.enter()
+		.append("rect")
+		.attr("class", label)
+		.style({'fill': color})
+
+		tmp = tmp
+		.attr('width', function(d) { return scaleX(d['w']); })
+		.attr('height', function(d) { return scaleY(d['h']); })
+		.attr('x', function(d) { return scaleXC(d['x']); })
+		.attr('y', function(d) { return scaleYC(d['y']); })
+		
+		tmp = tmp
+		.on('click', function(d) {
+			if (inert==false) { click(d) } else
+			if (inert==true) { clickInert(d) }
+			
+			over(d)
+
+		})
+		.on('mouseover', function(d) { 
+			if (inert==false) { over(d) } 
+			if (inert==true) { overInert(d) }
+		})
+		.on('mouseout', function(d) { 
+			if (inert==false) { out(d) }
+			if (inert==true) { outInert(d) } 
+		})
+	}
+	
+}
+
+				 		 
+
+
+
+
+
+
+
+		</script>
+	</body>
+</html>
