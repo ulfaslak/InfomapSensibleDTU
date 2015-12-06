@@ -2,344 +2,107 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>D3 Test</title>
-    <script type="text/javascript" src="d3/d3.v3.js"></script>
-    <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <title>DTU Communities</title>
 
-    <style type="text/css"></style>
-    <style type="text/css">
+    <script type="text/javascript" src="libs/d3.min.js"></script>
+    <script type="text/javascript" src="libs/jquery.js"></script>
+    <script type="text/javascript" src="libs/d3-tip.js"></script>
+    <script type="text/javascript" src="libs/bootstrap/js/tab.js"></script>
+    
+    <link href="libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="./viz.css">
 
-      rect {
-          fill: #7f8c8d;
-          stroke-width: 0;
-          opacity: 0.8;
-        }
-
-      .d3-tip {
-          line-height: 1;
-          font-weight: bold;
-          padding: 12px;
-          background: rgba(0, 0, 0, 0.8);
-          color: #fff;
-          border-radius: 2px;
-        }
-
-      /* Creates a small triangle extender for the tooltip */
-      .d3-tip:after {
-          box-sizing: border-box;
-          display: inline;
-          font-size: 10px;
-          width: 100%;
-          line-height: 1;
-          color: rgba(0, 0, 0, 0.8);
-          content: "\25BC";
-          position: absolute;
-          text-align: center;
-      }
-
-      /* Style northward tooltips differently */
-      .d3-tip.n:after {
-          margin: -1px 0 0 0;
-          top: 100%;
-          left: 0;
-      }
-
-      line {
-          stroke-width: 1;
-          stroke: black;
-          opacity: 0.1;
-      }
-
-      .tick{
-            font-size: 11px;
-            font-family: sans-serif;
-            color: black;
-            opacity: 0.5;
-      }
-
-
-    </style>
   </head>
   <body>
-    <script type="text/javascript">
 
-// Canvas parameters
-var w = 800-0;
-var h = 1000;
-var padding = 40;
+<!-- <div style="width: 100%; overflow: hidden;">
+    <div id="w1" style="width: 66%; float: left;"></div>
+    <div id="w2" style="position: fixed;"></div>
+</div> -->
 
-// Define global mode parameters
-var inert = false
-var clicked
+<div style="width: 100%; overflow: hidden;">
+    <div id='w1'></div>
+    <div id='w2'></div>
 
-// Define svg canvas. Every°thing will be drawn on this
-var svg = d3.select("body")
-  .append("svg")
-  .attr("width", w)
-  .attr("height", h);
+    <div id='w4'>
+      <div>
 
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+          <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">About</a></li>
+          <li role="presentation"><a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">Guidebook</a></li>
+        </ul>
 
-// Load dataset and run main function inside
-d3.json("data/dataset5.json", function(dataset) {
-  visualizeit(dataset)
-});
+        <!-- Tab panes -->
+        <div class="tab-content">
+          <div role="tabpanel" class="tab-pane active" id="home">
+            <br>
+            <p class='sidebar-text'>
+            This is an attempt to visualise how people flow through social communities throughout a day. On the left you see how social gatherings stretch out over a day and above is a network showing social connections in the narrow time span, which is illustrated as a blue band, initiated around 9 AM.
 
+            <br><br>
 
-// Main function
-var visualizeit = function(dataset) {
+            The data used in this visualisation consists of physical meetings throughout a day, recorded by bluetooth connections between phones carried by the little 500+ participants. Each meeting is represented as a link in the network above, and each circle represents a person. The social communities are inferred using <a href="http://mapequation.org/">the Map Equation</a>.
 
-  /////////////////////////////
-  // Define tooltip behavior //
-  /////////////////////////////
+          </p>
 
-  // Tooltip behavior for normal mode
-  tip1 = d3.tip().attr('class', 'd3-tip')
-    .offset([-12,0])
-    .html(function(d) { return "Community id: "
-      + d['c'].slice(1,d['c'].length) + "<br>"
-      + "Members: " + d['w']; 
-    });
+            <br>
 
-  // Tooltip behavior for inert mode
-  tip2 = d3.tip().attr('class', 'd3-tip')
-    .attr('background', 'rgba(0,0,0,0.3')
-    .offset([-12,0])
-    .html(function(d) { return "Similarity: "
-      + Math.round( 1000*dataset['sims'][label_clicked][d['c']]['sim']) / 10 + "%"
-      + "<br>" + "In common: "
-      + dataset['sims'][label_clicked][d['c']]['count']; 
-    });
+            <p align="right"> produced by <a href="http://ulfaslak.com/">Ulf Aslak</a>, &copy;2015.
+            </p>
+          </div>
+          <div role="tabpanel" class="tab-pane" id="profile">
+            <br>
+            <p class='sidebar-texr'>Try hovering over a community on the left. Neat right? All the remaining communities are ones that have members in common with the one you are hovering over. Now click it! You can now move the curser around and hover over the visible communities to see just how similar they are to the one you clicked. Now try playing with the arrow keys. Note how the graph updates and that the horizontal time bar (initiated at 9 AM) moves. Pan or zoom on the graph to manipulate its location. Double click a community to focus on it as you shuffle through time. Hold shift as you go &uarr; or &darr; to slow down the animation. Click a time stamp to jump to a different place in time. Enjoy!</p>
 
-  svg.call(tip1)
-  svg.call(tip2)
+            <table class="table table-striped"> 
+              <thead> 
+                <tr> 
+                  <th>Key</th> 
+                  <th>Description</th> 
+                </tr> 
+              </thead> 
+              <tbody> 
+                <tr> 
+                  <th scope="row"><p>&nbsp;&nbsp;&nbsp;&uarr;</p></th> 
+                  <td>Next time step</td> 
+                </tr> 
+                <tr> 
+                  <th scope="row"><p>&nbsp;&nbsp;&nbsp;&darr;</p></th> 
+                  <td>Previous time step</td> 
+                </tr> 
+                <tr> 
+                  <th scope="row"><p><kbd>shift</kbd> + &uarr;/&darr;</p></th> 
+                  <td>Slow time step</td> 
+                </tr> 
+                <tr> 
+                  <th scope="row"><p><kbd>alt</kbd></p></th> 
+                  <td>Toggle person Ids</td> 
+                </tr> 
+                <tr> 
+                  <th scope="row"><p><kbd>esc</kbd></p></th> 
+                  <td>Revert to normal mode</td> 
+                </tr> 
+              </tbody> 
+            </table>
 
+          </div>
+        </div>
 
-  ///////////////////////////////////////////
-  // Define hovering and clicking behavior //
-  ///////////////////////////////////////////
+      </div>
+    </div>
 
-  var over = function(d) {
-    label_clicked = d['c']
-
-    d3.selectAll("."+label_clicked)
-      .transition()
-        .duration(250)
-      .style({'opacity': 0.8})
-
-    for (var c = 0; c < communities.length; c++) {
-      label_other = communities[c]
-      sim = dataset['sims'][label_clicked][label_other]['sim']
-      if (sim > 0) {
-        d3.selectAll("."+label_other)
-          .transition()
-            .duration(250)
-          .style({'opacity': sScale(sim)})
-      } else {
-        d3.selectAll("."+label_other)
-          .transition()
-            .duration(250)
-          .style({'opacity': 0.01})
-      }
-    }
-
-    if (inert==true) {
-      tip1.show(d)
-      tip2.hide(d)
-    }
-  }
-
-  var overInert = function(d) {
-    if (d['c'] != label_clicked) {
-      if (dataset['sims'][label_clicked][d['c']]['sim'] != 0) {
-        tip2.show(d)
-      }
-    }
-  }
-
-  var out = function(d) {
-    d3.selectAll("rect")
-      .transition()
-        .duration(250)
-      .style({'opacity': 0.8})
-
-    tip1.hide(d)
-    tip2.hide(d)
-  }
-
-  var outInert = function(d) {
-    if (d['c'] != label_clicked) {
-      tip2.hide(d)
-    }
-  }
-
-  var click = function(d) {
-    inert = true;
-    clicked = d['c']
-    tip1.show(d)
-  }
-
-  var clickInert = function(d) {
-    clicked = d['c']
-    if (d['c'] == label_clicked) {
-      tip1.show(d)
-    }
-  }
-
-
-  // Set pretty background indicating night and day
-  var gradient = svg.append("svg:defs")
-    .append("svg:linearGradient")
-      .attr("id", "gradient")
-      .attr("x1", "1%")
-      .attr("y1", "0%")
-      .attr("x2", "1%")
-      .attr("y2", "100%")
-      .attr("x3", "1%")
-      .attr("y3", "100%")
-      .attr("spreadMethod", "pad")
-
-  var night_color = "rgb(150,150,150)"
-  var day_color = "rgb(255, 255, 255)"
-  var gradient_colors = [
-      {'offset': '0%', 'stop-color': night_color},
-      {'offset': '50%', 'stop-color': day_color},
-      {'offset': '100%', 'stop-color': night_color}
-    ]
-
-  for (i=0; i<3; i++) {
-    gradient.append("svg:stop")
-      .attr(gradient_colors[i])
-      .attr("stop-opacity", 1);
-  }
-
-  svg.append("svg:rect")
-      .attr("width", w)
-      .attr("height", h)
-      .style("fill", "url(#gradient)");
-
-  // Set background click to exit inert mode
-  svg.selectAll("background")
-    .data([w,h])
-    .enter()
-    .append("rect")
-    .style('width', function(d) { return w; })
-    .style('height', function(d) { return h; })
-    .style('fill', 'white')
-    .style('fill-opacity', 0.0)
-    .on("click", function(d) { 
-      console.log(inert)
-      out(d)
-      inert = false });
-
-  // Set esc-key to exit inert mode
-  $(document).keyup(function(e) {
-    if (e.keyCode == 27) {
-    console.log(inert)
-    out(clicked)
-    inert = false 
-    }
-  });
-
-
-  ////////////////////////////////
-  // Draw on canvas (main code) //
-  ////////////////////////////////
-
-  var ds_width = dataset['meta']['w']
-  var ds_height = dataset['meta']['h']
-
-  var xScale = d3.scale.linear()
-          .domain([0, ds_width])
-          .range([0, w]);
-
-  var yScale = d3.scale.linear()
-          .domain([0, ds_height])
-          .range([0, h]);
-
-  var xScaleC = d3.scale.linear()
-          .domain([0, ds_width])
-          .range([padding, w-padding]);
-
-  var yScaleC = d3.scale.linear()
-          .domain([0, ds_height])
-          .range([padding, h-padding]);
-
-  var sScale = d3.scale.sqrt()
-          .domain([0, 1])
-          .range([0.05, 0.8]);
-
-
-  // Time lines
-  var yTicks = dataset['time']['ticks']
-  var yTicks_keys = d3.keys(yTicks)
-  for (var i=0; i<yTicks_keys.length; i++) {
-    key = yTicks_keys[i]
-    svg.append("line")
-      .attr("x1", 0).attr("x2", w)
-      .attr("y1", yScale(key)).attr("y2", yScale(key));
-    svg.append("text")
-      .attr("y", yScale(key))
-      .attr("class", "tick")
-      .attr("x", 5)
-      .text(function() { 
-        var d =  new Date(yTicks[key])
-        return d.toLocaleTimeString().replace(/([\d]+)(:[\d]{2})(:[\d]{2})(.*)/, "$1$4")
-      });
-  }
-
-
-
-  // Loop over communities and draw them one at a time, adding hover and clicking behavior.
-  communities = d3.keys(dataset['coms'])
-
-  for (var i = 0; i < communities.length; i++) {
-    label = communities[i];
-    data = dataset['coms'][label]['blocks'];
-    color = dataset['coms'][label]['color'];
-
-    // Add rectangles
-    tmp = svg.selectAll(label)
-    .data(data)
-    .enter()
-    .append("rect")
-    .attr("class", label)
-    .style({'fill': color})
-
-    tmp = tmp
-    .attr('width', function(d) { return xScale(d['w']); })
-    .attr('height', function(d) { return yScale(d['h']); })
-    .attr('x', function(d) { return xScaleC(d['x']); })
-    .attr('y', function(d) { return yScaleC(d['y']); })
     
-    tmp = tmp
-    .on('click', function(d) {
-      if (inert==false) { click(d) } else
-      if (inert==true) { clickInert(d) }
-      
-      over(d)
+</div>
 
-    })
-    .on('mouseover', function(d) { 
-      if (inert==false) { over(d) } 
-      if (inert==true) { overInert(d) }
-    })
-    .on('mouseout', function(d) { 
-      if (inert==false) { out(d) }
-      if (inert==true) { outInert(d) } 
-    })
-  }
-  
-}
+<script type="text/javascript">
+$('#myTabs a').click(function (e) {
+  e.preventDefault()
+  $(this).tab('show')
+})
+</script>
 
-             
-
-
-
-
-
-
-
-    </script>
+<script src="./viz.js"></script>
+    
   </body>
 </html>
