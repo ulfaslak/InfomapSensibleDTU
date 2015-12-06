@@ -19,7 +19,7 @@ var visualizeit = function(dataset) {
 
   window.dataset = dataset
 
-  // Draw window 1
+  // Draw window 1 
   polygons();
   // Global variables for graph
   graph = new myGraph("#svgdiv");
