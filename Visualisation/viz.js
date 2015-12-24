@@ -7,11 +7,13 @@ var thresh = 3;
 var shiftDown = false;
 var altDown = false;
 var color = d3.scale.category20c();
+var size_thresh = 1
+var slideStop = new Event('slideStop')
 
 // Load dataset and run main function inside
-d3.json("data/dataset1.json", function(dataset) {
+d3.json("data/dataset.json", function(dataset) {
   visualizeit(dataset)
-});1
+});
 
 
 // Main function
@@ -21,13 +23,55 @@ var visualizeit = function(dataset) {
 
   // Draw window 1 
   polygons();
+  
   // Global variables for graph
   graph = new myGraph("#svgdiv");
   var force, nodes, links;
   // Draw window 2
   dat = dataset['layer_networks']['data'][time_step]
   updateGraph(dat);
+
+  // Draw window 3
+  slider();
 };
+
+
+var slider = function() {
+  
+  $("#ex6").slider({
+    formatter: function(value) {
+      return 'Size threshold: ' + value;
+    }
+  });
+
+  $("#ex6").on("slide", function(slideEvt) {
+    out(focus_label)
+    inert = false 
+    console.log("inert", false)
+    window.focus_label = undefined
+    console.log("focus_label",focus_label)
+    defaultColor()
+
+    size_thresh = slideEvt.value
+    
+    communities = d3.keys(dataset['coms'])
+    for (var c = 0; c < communities.length; c++) {
+      com_label = communities[c]
+      size = dataset['coms'][com_label]['max_size']
+      if (size >= size_thresh) {
+        d3.selectAll("."+com_label)
+          .transition()
+            .duration(200)
+          .style({'opacity': 1.0})
+      } else {
+        d3.selectAll("."+com_label)
+          .transition()
+            .duration(200)
+          .style({'opacity': 0.0})
+      }
+    }
+  });
+}
 
 
 var polygons = function() {
@@ -98,7 +142,9 @@ var polygons = function() {
     for (var c = 0; c < communities.length; c++) {
       label_other = communities[c]
       sim = dataset['sims'][focus_label][label_other]['sim']
-      if (sim > 0) {
+      size = dataset['coms'][label_other]['max_size']
+
+      if (sim > 0 && size >= size_thresh) {
         d3.selectAll("."+label_other)
           .transition()
             .duration(200)
@@ -108,7 +154,7 @@ var polygons = function() {
         d3.selectAll("."+label_other)
           .transition()
             .duration(200)
-          .style({'opacity': 0.01})
+          .style({'opacity': 0.0})
       }
     }
 
@@ -120,18 +166,32 @@ var polygons = function() {
 
   var overInert = function(d) {
     if (d['c'] != focus_label) {
-      if (dataset['sims'][focus_label][d['c']]['sim'] != 0) {
+      sim = dataset['sims'][focus_label][d['c']]['sim']
+      size = dataset['coms'][d['c']]['max_size']
+      if (sim > 0 && size >= size_thresh) {
         d3.select("body").style("cursor", "pointer")
         tip2.show(d, document.getElementsByClassName(d['c'])[0])
       }
     }
   }
 
-  var out = function(d) {
-    d3.selectAll("polygon")
-      .transition()
-        .duration(200)
-      .style({'opacity': 0.8})
+  window.out = function(d) {
+    communities = d3.keys(dataset['coms'])
+    for (var c = 0; c < communities.length; c++) {
+      com_label = communities[c]
+      size = dataset['coms'][com_label]['max_size']
+      if (size >= size_thresh) {
+        d3.selectAll("."+com_label)
+          .transition()
+            .duration(200)
+          .style({'opacity': 1.0})
+      } else {
+        d3.selectAll("."+com_label)
+          .transition()
+            .duration(200)
+          .style({'opacity': 0.0})
+      }
+    }
 
     tip1.hide(d)
     tip2.hide(d)
@@ -411,7 +471,7 @@ var polygons = function() {
               if (inert==false) { out(d); defaultColor(); }
               if (inert==true) { outInert(d) }
               d3.select("body").style("cursor", "default")
-          });
+          })
      }
 };
 

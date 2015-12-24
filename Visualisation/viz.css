@@ -59,11 +59,20 @@ p.sidebar-text {
     width: 32%;
     margin: 5px;
 }
+#w3 {
+    float: right;
+    width: 32%;
+    margin: 10px;
+}
 #w4 {
     float: right;
     width: 32%;
     height: 10%;
     margin-right: 12px;
+}
+
+#ex6Slider .slider-selection {
+    background: #BABABA;
 }
 
 
