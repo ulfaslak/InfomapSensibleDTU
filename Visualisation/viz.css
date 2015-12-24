@@ -11,7 +11,7 @@
 .d3-tip:after {
     box-sizing: border-box;
     display: inline;
-    font-size: 10px;
+    font-size: 12px;
     width: 100%;
     line-height: 1;
     color: rgba(0, 0, 0, 0.8);
@@ -51,19 +51,19 @@ p.sidebar-text {
 
 #w1 {
     float: left;
+    width: 50%;
+    margin: 5px;
 }
 #w2 {
     float: right;
-}
-#w3 {
-    float: right;
-    width: 33.33%;
-    height: 10%;
+    width: 32%;
+    margin: 5px;
 }
 #w4 {
     float: right;
-    width: 33.33%;
+    width: 32%;
     height: 10%;
+    margin-right: 12px;
 }
 
 

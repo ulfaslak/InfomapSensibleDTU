@@ -9,9 +9,9 @@ var altDown = false;
 var color = d3.scale.category20c();
 
 // Load dataset and run main function inside
-d3.json("data/dataset.json", function(dataset) {
+d3.json("data/dataset1.json", function(dataset) {
   visualizeit(dataset)
-});
+});1
 
 
 // Main function
@@ -53,24 +53,32 @@ var polygons = function() {
   tip1 = d3.tip().attr('class', 'd3-tip')
     .offset([-10,0])
     .html(function(d) {
+      c = d['c']
+      abs_size = dataset['coms'][c]['abs_size']
+      max_size = dataset['coms'][c]['max_size']
+      min_size = dataset['coms'][c]['min_size']
+      duration = dataset['coms'][c]['duration']
     return "<p class='text-muted'>"+focus_label.slice(1,focus_label.length)+"</p>"
       + "<p class='text-primary'>Members</p>"
-      + "<p class='small'>Total : " + d['abs_size'] + "<br>"
-      + "<p class='lead'>Maximum : " + d['max_size'] + "<br>"
-      + "Minimum : " + d['min_size']
-      + "<p class='small'>Duration: " + Math.floor(d['duration']/3600) +" h "+ Math.floor(d['duration']%3600)/60 + " m </p>";
+      + "<p class='small'>Total : " + abs_size + "<br>"
+      + "<p class='lead'>Minimum : " + min_size + "<br>"
+      + "Maximum : " + max_size
+      + "<p class='small'>Duration: " + Math.floor(duration/3600) +" h "+ Math.floor(duration%3600)/60 + " m </p>";
   });
 
   // Tooltip behavior for inert mode
   tip2 = d3.tip().attr('class', 'd3-tip')
     .attr('background', 'rgba(0,0,0,0.3')
     .offset([-12,0])
-    .html(function(d) { return "<p class='text-muted'>"+d['c'].slice(1,d['c'].length)+"</p>"
+    .html(function(d) { 
+      c = d['c']
+      duration = dataset['coms'][c]['duration']
+    return "<p class='text-muted'>"+d['c'].slice(1,d['c'].length)+"</p>"
       + "<p class='lead'>Similarity: "
       + Math.round( 1000*dataset['sims'][focus_label][d['c']]['sim']) / 10 + "%"
       + "<br>" + "In common: "
       + dataset['sims'][focus_label][d['c']]['count'] + "<p>"
-      + "<p class='small'>Duration: " + Math.floor(d['duration']/3600) +" h "+ Math.floor(d['duration']%3600)/60 + " m </p>";
+      + "<p class='small'>Duration: " + Math.floor(duration/3600) +" h "+ Math.floor(duration%3600)/60 + " m </p>";
     });
 
   svg_w1.call(tip1)
