@@ -44,33 +44,45 @@ var slider = function() {
     }
   });
 
+  // Triggers action on slide event
   $("#ex6").on("slide", function(slideEvt) {
-    out(focus_label)
-    inert = false 
-    console.log("inert", false)
-    window.focus_label = undefined
-    console.log("focus_label",focus_label)
-    defaultColor()
 
-    size_thresh = slideEvt.value
-    
-    communities = d3.keys(dataset['coms'])
-    for (var c = 0; c < communities.length; c++) {
-      com_label = communities[c]
-      size = dataset['coms'][com_label]['max_size']
-      if (size >= size_thresh) {
-        d3.selectAll("."+com_label)
-          .transition()
-            .duration(200)
-          .style({'opacity': 1.0})
-      } else {
-        d3.selectAll("."+com_label)
-          .transition()
-            .duration(200)
-          .style({'opacity': 0.0})
+    // Only act if diff betw new and old slider value is 1
+    if (Math.abs(slideEvt.value-size_thresh) == 1) {
+
+      // Mimic 'out' behavior when slider is used
+      if (inert==true) {
+        out(focus_label)
+        inert = false 
+        console.log("inert", false)
+        window.focus_label = undefined
+        console.log("focus_label",focus_label)
+        defaultColor()
+      }
+
+      // Update size_thresh
+      size_thresh = slideEvt.value
+      
+      // Loop through communitites and opaque out those below size_thresh
+      communities = d3.keys(dataset['coms'])
+      for (var c = 0; c < communities.length; c++) {
+        com_label = communities[c]
+        size = dataset['coms'][com_label]['max_size']
+        if (size >= size_thresh) {
+          d3.selectAll("."+com_label)
+            .transition()
+              .duration(200)
+            .style({'opacity': 1.0})
+        } else {
+          d3.selectAll("."+com_label)
+            .transition()
+              .duration(200)
+            .style({'opacity': 0.0})
+        }
       }
     }
   });
+    
 }
 
 
