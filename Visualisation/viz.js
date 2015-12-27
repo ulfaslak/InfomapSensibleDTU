@@ -28,7 +28,7 @@ var opts = {
 , fps: 20 // Frames per second when using setTimeout() as a fallback for CSS
 , zIndex: 2e9 // The z-index (defaults to 2000000000)
 , className: 'spinner' // The CSS class to assign to the spinner
-, top: '51%' // Top position relative to parent
+, top: '50%' // Top position relative to parent
 , left: '50%' // Left position relative to parent
 , shadow: false // Whether to render a shadow
 , hwaccel: false // Whether to use hardware acceleration
@@ -442,7 +442,7 @@ var polygons = function() {
           .attr("class", label)
           .style({'fill': color(label)})
           .style({'stroke-width': 0.5})
-          .style({'stroke': 'black'})
+          .style({'stroke': 'rgba(0,0,0,0.5'})
           .attr('opacity', function(d) {
               size = dataset['coms'][d['c']]['max_size']
               if (size >= size_thresh) {
@@ -475,7 +475,6 @@ var polygons = function() {
 
 
 function myGraph() {
-
     //===============//
     // Define canvas //
     //===============//
@@ -483,12 +482,13 @@ function myGraph() {
     var width_w2 = window.innerWidth*1/3;
     var height_w2 = width_w2;
     var margin_w2 = {'left': 40, 'right': 10, 'top': 40, 'bottom': 20}
-    var nominal_base_node_size = 8;
+    var nominal_base_node_size = 7;
     var max_base_node_size = 36;
 
     var min_zoom = 0.1;
     var max_zoom = 7;
-    var zoom = d3.behavior.zoom().scaleExtent([min_zoom,max_zoom])
+    var zoom = d3.behavior.zoom()
+      .scaleExtent([min_zoom,max_zoom])
     var size = d3.scale.pow().exponent(1)
       .domain([1,100])
       .range([8,24]);
@@ -525,8 +525,8 @@ function myGraph() {
                     linked_nodes_objects = nodes.filter(function(i) {return linked_nodes.indexOf(parseInt(i.id)) != -1;});
                     x_vals = linked_nodes_objects.map(function(n) {return n.x});
                     y_vals = linked_nodes_objects.map(function(n) {return n.y});
-                    x_init = d3.mean(x_vals);//zoom.scale();
-                    y_init = d3.mean(y_vals);//zoom.scale();
+                    x_init = d3.mean(x_vals);
+                    y_init = d3.mean(y_vals);
 
                     nodes.push({"id": id,
                             "x": x_init,
@@ -750,16 +750,17 @@ function myGraph() {
 
 
 
-        zoom.on("zoom", function() {
-          var base_radius = nominal_base_node_size;
-            if (nominal_base_node_size*zoom.scale()>max_base_node_size) base_radius = max_base_node_size/zoom.scale();
-                circle.attr("d", d3.svg.symbol()
-                .size(function(d) { return Math.PI*Math.pow(size(d.size)*base_radius/nominal_base_node_size||base_radius,2); })
-                .type(function(d) { return d.type; }))
-            
+        zoom
+          .on("zoom", function() {
+            var base_radius = nominal_base_node_size;
+              if (nominal_base_node_size*zoom.scale()>max_base_node_size) base_radius = max_base_node_size/zoom.scale();
+                  circle.attr("d", d3.svg.symbol()
+                  .size(function(d) { return Math.PI*Math.pow(size(d.size)*base_radius/nominal_base_node_size||base_radius,2); })
+                  .type(function(d) { return d.type; }))
+              
 
-          g.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-        });
+            g.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+          });
          
         svg_w2.call(zoom).on("dblclick.zoom", null); 
 
