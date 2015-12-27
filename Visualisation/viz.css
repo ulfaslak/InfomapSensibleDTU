@@ -50,25 +50,36 @@ p.sidebar-text {
 
 
 #w1 {
+    position: fixed;
     float: left;
     width: 50%;
+    height: 100%;
     margin: 5px;
 }
 #w2 {
+    position: fixed;
     float: right;
     width: 32%;
+    height: 32%;
     margin: 5px;
+    right: 1%;
 }
 #w3 {
+    position: fixed;
     float: right;
-    width: 32%;
+    width: 32vw;
     margin: 10px;
+    right: 0%;
+    top: 33vw;
 }
 #w4 {
+    position: fixed;
     float: right;
-    width: 32%;
+    width: 32vw;
     height: 10%;
     margin-right: 12px;
+    right: 0%;
+    top: 40vw;
 }
 
 #ex6Slider .slider-selection {

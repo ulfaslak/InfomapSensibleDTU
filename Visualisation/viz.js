@@ -11,9 +11,39 @@ var size_thresh = 1
 var slideStop = new Event('slideStop')
 var ds_filename = "datasetMon"
 
+// loader settings
+var opts = {
+  lines: 10 // The number of lines to draw
+, length: 0 // The length of each line
+, width: 10 // The line thickness
+, radius: 20 // The radius of the inner circle
+, scale: 0.25 // Scales overall size of the spinner
+, corners: 0.7 // Corner roundness (0..1)
+, color: '#000' // #rgb or #rrggbb or array of colors
+, opacity: 0.3 // Opacity of the lines
+, rotate: 56 // The rotation offset
+, direction: 1 // 1: clockwise, -1: counterclockwise
+, speed: 2.2 // Rounds per second
+, trail: 15 // Afterglow percentage
+, fps: 20 // Frames per second when using setTimeout() as a fallback for CSS
+, zIndex: 2e9 // The z-index (defaults to 2000000000)
+, className: 'spinner' // The CSS class to assign to the spinner
+, top: '51%' // Top position relative to parent
+, left: '50%' // Left position relative to parent
+, shadow: false // Whether to render a shadow
+, hwaccel: false // Whether to use hardware acceleration
+, position: 'absolute' // Element positioning
+}
+
 // Load dataset and run main function inside
 var main = function(ds_filename) {
+  w1 = document.getElementById("w1");
+  w2 = document.getElementById("w2");
+  spinnerw1 = new Spinner(opts).spin(w1);
+  spinnerw2 = new Spinner(opts).spin(w2);
   d3.json("data/" + ds_filename + ".json", function(ds_loaded) {
+    spinnerw1.stop();
+    spinnerw2.stop();
     visualizeit(ds_loaded)
   });
 }
@@ -47,9 +77,7 @@ var slider = function() {
     size_thresh = evt.value
     // Only act if diff betw new and old slider value is 1
     if (Math.abs(size_thresh-old_size_thresh) >= 1) {
-      
       // --- Sausage view behavior --- //
-
       // Mimic 'out' behavior when slider is used
       if (inert==true) {
         out(focus_label)
@@ -304,117 +332,7 @@ var polygons = function() {
           defaultColor()  
       });
 
-  // Set esc-key to exit inert mode
-  $(document).keyup(function(e) {
-    if (e.keyCode == 27) {
-      out(focus_label)
-      inert = false 
-      console.log("inert", false)
-      window.focus_label = undefined
-      console.log("focus_label",focus_label)
-      defaultColor()
-    }
-  });
 
-  var nextStep = function() {
-      time_step++
-      dat = dataset['layer_networks']['data'][time_step]
-      d3.select(".time_step_box")
-          .transition()
-          .duration(function() {
-              if (shiftDown == true) {
-                  return 2000;
-              } else {
-                  return 200;
-              }
-          })
-          .attr("y", function(d) { return yScale(time_step-1) })
-      console.log("time_step", time_step)
-      updateGraph(dat)
-      removeAllNodesBelowThresh();
-  }
-
-  var prevStep = function() {
-      time_step--
-      dat = dataset['layer_networks']['data'][time_step]
-      d3.select(".time_step_box")
-          .transition()
-          .duration(function() {
-              if (shiftDown == true) {
-                  return 2000;
-              } else {
-                  return 200;
-              }
-          })
-          .attr("y", function(d) { return yScale(time_step-1) })
-      console.log("time_step", time_step)
-      updateGraph(dat)
-      removeAllNodesBelowThresh();
-  }
-
-  // Set graph to change on arrow-keys
-  $(document).keydown(function(e) {
-    if (shiftDown == true) {
-      thresh = 100;
-    } else {
-      thresh = 3;
-    }
-    if (e.keyCode == 38) { // Up
-      prevStep()
-    }
-  });
-
-  $(document).keydown(function(e) {
-    if (shiftDown == true) {
-      thresh = 150;
-    } else {
-      thresh = 20;
-    }
-    if (e.keyCode == 40) { // Down
-      nextStep()
-    }
-  });
-
-  $(document).keydown(function(e) {
-      if (e.keyCode == 16) {
-          shiftDown = true;
-      }
-  }).keyup(function(e) {
-      if (e.keyCode == 16) {
-          shiftDown = false;
-      }
-  });
-
-  $(document).keydown(function(e) {
-      if (e.keyCode == 18) {
-          altDown = true;
-          d3.selectAll("text")
-            .transition()
-            .duration(100)
-            .attr("opacity", 0.5)
-      }
-  }).keyup(function(e) {
-      if (e.keyCode == 18) {
-          altDown = false;
-          d3.selectAll("text")
-            .transition()
-            .duration(100)
-            .attr("opacity", 0)
-      }
-  });
-
-
-
-  var ar = new Array(33,34,35,36,37,38,39,40);
-
-  $(document).keydown(function(e) {
-       var key = e.which;
-        if($.inArray(key,ar) > -1) {
-            e.preventDefault();
-            return false;
-        }
-        return true;
-  });
 
 
   //============================//
@@ -425,23 +343,23 @@ var polygons = function() {
   var sd_width = dataset['meta']['w']
   var ds_height = dataset['meta']['h']
 
-  var xScale = d3.scale.linear()
+  window.xScale = d3.scale.linear()
           .domain([0, sd_width])
           .range([0, width_w1]);
 
-  var yScale = d3.scale.linear()
+  window.yScale = d3.scale.linear()
           .domain([0, ds_height])
           .range([0, height_w1]);
 
-  var xScaleC = d3.scale.linear()
+  window.xScaleC = d3.scale.linear()
           .domain([0, sd_width])
           .range([margin_w1['left'], width_w1-margin_w1['right']]);
 
-  var yScaleC = d3.scale.linear()
+  window.yScaleC = d3.scale.linear()
           .domain([0, ds_height])
           .range([margin_w1['top'], height_w1-margin_w1['bottom']]);
 
-  var sScale = d3.scale.sqrt()
+  window.sScale = d3.scale.sqrt()
           .domain([0, 1])
           .range([0.05, 0.8]);
 
@@ -592,8 +510,6 @@ function myGraph() {
 
         group = dataset['layer_networks']['data'][time_step]['nodes'][id]['group']
         grp_size = dataset['coms']["c"+group]['max_size']
-        
-        console.log('group', size)
 
         if (grp_size >= size_thresh) {
             // Initiate randomly
@@ -1061,6 +977,118 @@ function updateGraph(dat) {
         return 2000 + (1500*step); // initial time, wait time
     }
 }
+
+// Set esc-key to exit inert mode
+$(document).keyup(function(e) {
+  if (e.keyCode == 27) {
+    out(focus_label)
+    inert = false 
+    console.log("inert", false)
+    window.focus_label = undefined
+    console.log("focus_label",focus_label)
+    defaultColor()
+  }
+});
+
+var nextStep = function() {
+    time_step++
+    dat = dataset['layer_networks']['data'][time_step]
+    d3.select(".time_step_box")
+        .transition()
+        .duration(function() {
+            if (shiftDown == true) {
+                return 2000;
+            } else {
+                return 200;
+            }
+        })
+        .attr("y", function(d) { return yScale(time_step-1) })
+    console.log("time_step", time_step)
+    updateGraph(dat)
+    removeAllNodesBelowThresh();
+}
+
+var prevStep = function() {
+    time_step--
+    dat = dataset['layer_networks']['data'][time_step]
+    d3.select(".time_step_box")
+        .transition()
+        .duration(function() {
+            if (shiftDown == true) {
+                return 2000;
+            } else {
+                return 200;
+            }
+        })
+        .attr("y", function(d) { return yScale(time_step-1) })
+    console.log("time_step", time_step)
+    updateGraph(dat)
+    removeAllNodesBelowThresh();
+}
+
+// Set graph to change on arrow-keys
+$(document).keydown(function(e) {
+  if (shiftDown == true) {
+    thresh = 100;
+  } else {
+    thresh = 3;
+  }
+  if (e.keyCode == 38) { // Up
+    prevStep()
+  }
+});
+
+$(document).keydown(function(e) {
+  if (shiftDown == true) {
+    thresh = 150;
+  } else {
+    thresh = 20;
+  }
+  if (e.keyCode == 40) { // Down
+    nextStep()
+  }
+});
+
+$(document).keydown(function(e) {
+    if (e.keyCode == 16) {
+        shiftDown = true;
+    }
+}).keyup(function(e) {
+    if (e.keyCode == 16) {
+        shiftDown = false;
+    }
+});
+
+$(document).keydown(function(e) {
+    if (e.keyCode == 18) {
+        altDown = true;
+        d3.selectAll("text")
+          .transition()
+          .duration(100)
+          .attr("opacity", 0.5)
+    }
+}).keyup(function(e) {
+    if (e.keyCode == 18) {
+        altDown = false;
+        d3.selectAll("text")
+          .transition()
+          .duration(100)
+          .attr("opacity", 0)
+    }
+});
+
+
+
+var ar = new Array(33,34,35,36,37,38,39,40);
+
+$(document).keydown(function(e) {
+     var key = e.which;
+      if($.inArray(key,ar) > -1) {
+          e.preventDefault();
+          return false;
+      }
+      return true;
+});
 
 
 var union = function(arr1, arr2) {
