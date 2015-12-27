@@ -21,7 +21,35 @@
     <div id='w1'></div>
     <div id='w2'></div>
     <div id='w3'>
-      <input id="ex6" data-slider-id='ex6Slider' type="text" data-slider-min="1" data-slider-max="10" data-slider-step="1" data-slider-value="2"/>
+
+      <!-- Slider (smallest allowed group size) -->
+      <input id="ex6" data-slider-id='ex6Slider' type="text" data-slider-min="2" data-slider-max="10" data-slider-step="1" data-slider-value="2"/>
+
+      <!-- Radio buttons (day of week) -->
+      <div class="btn-group btn-group-justified" id="myButtonGroup" data-toggle="buttons">
+        <label class="btn btn-default active">
+            <input type="radio" id="datasetMon" name="quality[25]" checked="checked" value="1" /> Mon
+        </label> 
+        <label class="btn btn-default">
+            <input type="radio" id="datasetTue" name="quality[25]" value="2" /> Tue
+        </label> 
+        <label class="btn btn-default">
+            <input type="radio" id="datasetWed" name="quality[25]" value="3" /> Wed
+        </label> 
+        <label class="btn btn-default">
+            <input type="radio" id="datasetThu" name="quality[25]" value="4" /> Thu
+        </label> 
+        <label class="btn btn-default">
+            <input type="radio" id="datasetFri" name="quality[25]" value="5" /> Fri
+        </label>
+        <label class="btn btn-default">
+            <input type="radio" id="datasetSat" name="quality[25]" value="6" /> Sat
+        </label>
+        <label class="btn btn-default">
+            <input type="radio" id="datasetSun" name="quality[25]" value="7" /> Sun
+        </label>
+    </div>
+
     </div>
 
     <div id='w4'>

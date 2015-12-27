@@ -9,17 +9,18 @@ var altDown = false;
 var color = d3.scale.category20c();
 var size_thresh = 1
 var slideStop = new Event('slideStop')
+var ds_filename = "datasetMon"
 
 // Load dataset and run main function inside
-d3.json("data/dataset.json", function(dataset) {
-  visualizeit(dataset)
-});
+var main = function(ds_filename) {
+  d3.json("data/" + ds_filename + ".json", function(ds_loaded) {
+    visualizeit(ds_loaded)
+  });
+}
 
+var visualizeit = function(ds_loaded) {
 
-// Main function
-var visualizeit = function(dataset) {
-
-  window.dataset = dataset
+  window.dataset = ds_loaded
 
   // Draw window 1 
   polygons();
@@ -30,25 +31,24 @@ var visualizeit = function(dataset) {
   // Draw window 2
   dat = dataset['layer_networks']['data'][time_step]
   updateGraph(dat);
-
-  // Draw window 3
-  slider();
 };
-
 
 var slider = function() {
   
   $("#ex6").slider({
     formatter: function(value) {
-      return 'Size threshold: ' + value;
+      return 'Min. group size: ' + value;
     }
   });
 
-  // Triggers action on slide event
-  $("#ex6").on("slide", function(slideEvt) {
-
+  var sliderAction = function(evt) {
+    // Update size_thresh
+    old_size_thresh = size_thresh
+    size_thresh = evt.value
     // Only act if diff betw new and old slider value is 1
-    if (Math.abs(slideEvt.value-size_thresh) == 1) {
+    if (Math.abs(size_thresh-old_size_thresh) >= 1) {
+      
+      // --- Sausage view behavior --- //
 
       // Mimic 'out' behavior when slider is used
       if (inert==true) {
@@ -59,9 +59,6 @@ var slider = function() {
         console.log("focus_label",focus_label)
         defaultColor()
       }
-
-      // Update size_thresh
-      size_thresh = slideEvt.value
       
       // Loop through communitites and opaque out those below size_thresh
       communities = d3.keys(dataset['coms'])
@@ -80,10 +77,61 @@ var slider = function() {
             .style({'opacity': 0.0})
         }
       }
+
+      // --- Graph behavior --- //
+      if (size_thresh-old_size_thresh > 0) {
+        removeAllLinksBelowThresh();
+        removeAllNodesBelowThresh();
+      }
+      else {
+        dat = dataset['layer_networks']['data'][time_step]
+        updateGraph(dat)
+      }
+    }
+  }
+
+  // Triggers action on slide event
+  $("#ex6").on("slide", function(slideEvt) {
+    sliderAction(slideEvt);  
+  });
+
+  $("#ex6").on("slideStop", function(stopEvt) {
+    sliderAction(stopEvt);  
+  });
+}
+
+var radioButtons = function() {
+  $('#myButtonGroup .btn').on('click', function(e) {
+    $('#myButtonGroup .active').removeClass('active');
+    $(this).addClass('active');
+
+    // Update data source
+    ds_filename = e.toElement.id
+
+    // Perform esc-key behavior
+    out(focus_label)
+    inert = false 
+    console.log("inert", false)
+    window.focus_label = undefined
+    console.log("focus_label",focus_label)
+
+    // Remove all svg
+    d3.selectAll('svg').remove();
+
+    // Build viz from scratch with new ds
+    if (ds_filename != "") {
+      main(ds_filename);
     }
   });
-    
 }
+
+
+main(ds_filename);
+
+// Draw window 3
+slider();
+radioButtons();
+
 
 
 var polygons = function() {
@@ -146,33 +194,37 @@ var polygons = function() {
   //=======================================//
 
   window.over = function(d) {
-    d3.selectAll("."+focus_label)
-      .transition()
-      .duration(200)
-      .style({'opacity': 0.8})
+    size = dataset['coms'][focus_label]['max_size']
+    if (size >= size_thresh) {
+      d3.selectAll("."+focus_label)
+        .transition()
+        .duration(200)
+        .style({'opacity': 0.8})
+    
 
-    for (var c = 0; c < communities.length; c++) {
-      label_other = communities[c]
-      sim = dataset['sims'][focus_label][label_other]['sim']
-      size = dataset['coms'][label_other]['max_size']
+      for (var c = 0; c < communities.length; c++) {
+        label_other = communities[c]
+        sim = dataset['sims'][focus_label][label_other]['sim']
+        size = dataset['coms'][label_other]['max_size']
 
-      if (sim > 0 && size >= size_thresh) {
-        d3.selectAll("."+label_other)
-          .transition()
-            .duration(200)
-          .style({'opacity': sScale(sim)})
-        d3.select("body").style("cursor", "pointer")
-      } else {
-        d3.selectAll("."+label_other)
-          .transition()
-            .duration(200)
-          .style({'opacity': 0.0})
+        if (sim > 0 && size >= size_thresh) {
+          d3.selectAll("."+label_other)
+            .transition()
+              .duration(200)
+            .style({'opacity': sScale(sim)})
+          d3.select("body").style("cursor", "pointer")
+        } else {
+          d3.selectAll("."+label_other)
+            .transition()
+              .duration(200)
+            .style({'opacity': 0.0})
+        }
       }
-    }
 
-    if (inert==true) {
-      tip1.show(d, document.getElementsByClassName(focus_label)[0])
-      tip2.hide(d)
+      if (inert==true) {
+        tip1.show(d, document.getElementsByClassName(focus_label)[0])
+        tip2.hide(d)
+      }
     }
   }
 
@@ -216,14 +268,18 @@ var polygons = function() {
   }
 
   window.click = function(d) {
-    inert = true;
-    console.log("inert", true)
-    console.log("focus_label", focus_label)
-    tip1.show(d, document.getElementsByClassName(focus_label)[0])
+    size = dataset['coms'][focus_label]['max_size']
+    if (size >= size_thresh) {
+      inert = true;
+      console.log("inert", true)
+      console.log("focus_label", focus_label)
+      tip1.show(d, document.getElementsByClassName(focus_label)[0])
+    }
   }
 
   var clickInert = function(d) {
-    if (d['c'] == focus_label) {
+    size = dataset['coms'][focus_label]['max_size']
+    if (d['c'] == focus_label && size >= size_thresh) {
       tip1.show(d, document.getElementsByClassName(focus_label)[0])
     }
   }
@@ -275,6 +331,7 @@ var polygons = function() {
           .attr("y", function(d) { return yScale(time_step-1) })
       console.log("time_step", time_step)
       updateGraph(dat)
+      removeAllNodesBelowThresh();
   }
 
   var prevStep = function() {
@@ -292,6 +349,7 @@ var polygons = function() {
           .attr("y", function(d) { return yScale(time_step-1) })
       console.log("time_step", time_step)
       updateGraph(dat)
+      removeAllNodesBelowThresh();
   }
 
   // Set graph to change on arrow-keys
@@ -466,6 +524,15 @@ var polygons = function() {
           .style({'fill': color(label)})
           .style({'stroke-width': 0.5})
           .style({'stroke': 'black'})
+          .attr('opacity', function(d) {
+              size = dataset['coms'][d['c']]['max_size']
+              if (size >= size_thresh) {
+                return 1.0;
+              }
+              else {
+                return 0.0;
+              }
+          })
           .on('mouseup', function(d) {
               window.focus_label = d['c']
               console.log("focus_label", focus_label)
@@ -523,45 +590,53 @@ function myGraph() {
 
     this.addNode = function (id) {
 
-        // Initiate randomly
-        if (keep_nodes.length == 0) {
-            nodes.push({"id": id});
-        } else {
-            // Get all linked nodes that stayed in graph across time steps
-            linked_nodes = dataset['layer_networks']['data'][time_step]['links_dict'][id]
-              .filter(function(n) { return keep_nodes.indexOf(String(n)) != -1; })
+        group = dataset['layer_networks']['data'][time_step]['nodes'][id]['group']
+        grp_size = dataset['coms']["c"+group]['max_size']
+        
+        console.log('group', size)
 
-            if (linked_nodes.length > 0) {
-                linked_nodes_objects = nodes.filter(function(i) {return linked_nodes.indexOf(parseInt(i.id)) != -1;});
-                x_vals = linked_nodes_objects.map(function(n) {return n.x});
-                y_vals = linked_nodes_objects.map(function(n) {return n.y});
-                x_init = d3.mean(x_vals);//zoom.scale();
-                y_init = d3.mean(y_vals);//zoom.scale();
-
-                nodes.push({"id": id,
-                        "x": x_init,
-                        "y": y_init});
-
+        if (grp_size >= size_thresh) {
+            // Initiate randomly
+            if (keep_nodes.length == 0) {
+                nodes.push({"id": id});
             } else {
-
-                group = dataset['layer_networks']['data'][time_step]['nodes'][id]['group']
-                grp_nodes = dataset['layer_networks']['data'][time_step]['groups'][group]
+                // Get all linked nodes that stayed in graph across time steps
+                linked_nodes = dataset['layer_networks']['data'][time_step]['links_dict'][id]
                   .filter(function(n) { return keep_nodes.indexOf(String(n)) != -1; })
 
-                if (grp_nodes.length > 0) {
-                    grp_nodes_objects = nodes.filter(function(i) {return grp_nodes.indexOf(parseInt(i.id)) != -1;})
-                    x_init = d3.mean(grp_nodes_objects.map(function(n) {return n.x}))
-                    y_init = d3.mean(grp_nodes_objects.map(function(n) {return n.y}))
-                } else {
-                    x_init = width_w2 * (Math.random()*1/2 + 1/4)
-                    y_init = height_w2 * (Math.random()*1/2 + 1/4)
-                }
-                nodes.push({"id": id,
+                if (linked_nodes.length > 0) {
+                    linked_nodes_objects = nodes.filter(function(i) {return linked_nodes.indexOf(parseInt(i.id)) != -1;});
+                    x_vals = linked_nodes_objects.map(function(n) {return n.x});
+                    y_vals = linked_nodes_objects.map(function(n) {return n.y});
+                    x_init = d3.mean(x_vals);//zoom.scale();
+                    y_init = d3.mean(y_vals);//zoom.scale();
+
+                    nodes.push({"id": id,
                             "x": x_init,
                             "y": y_init});
 
+                } else {
+
+                    //group = dataset['layer_networks']['data'][time_step]['nodes'][id]['group']
+                    grp_nodes = dataset['layer_networks']['data'][time_step]['groups'][group]
+                      .filter(function(n) { return keep_nodes.indexOf(String(n)) != -1; })
+
+                    if (grp_nodes.length > 0) {
+                        grp_nodes_objects = nodes.filter(function(i) {return grp_nodes.indexOf(parseInt(i.id)) != -1;})
+                        x_init = d3.mean(grp_nodes_objects.map(function(n) {return n.x}))
+                        y_init = d3.mean(grp_nodes_objects.map(function(n) {return n.y}))
+                    } else {
+                        x_init = width_w2 * (Math.random()*1/2 + 1/4)
+                        y_init = height_w2 * (Math.random()*1/2 + 1/4)
+                    }
+                    nodes.push({"id": id,
+                                "x": x_init,
+                                "y": y_init});
+
+                }
             }
         }
+
     };
 
     this.removeNode = function (id) {
@@ -577,8 +652,16 @@ function myGraph() {
     };
 
     this.addLink = function (source, target, value) {
-        link = {"source": findNode(source), "target": findNode(target), "value": value}
-        links.push(link);
+        source_group = dataset['layer_networks']['data'][time_step]['nodes'][source]['group']
+        target_group = dataset['layer_networks']['data'][time_step]['nodes'][target]['group']
+        source_grp_size = dataset['coms']["c"+source_group]['max_size']
+        target_grp_size = dataset['coms']["c"+target_group]['max_size']
+
+        if (source_grp_size >= size_thresh && target_grp_size >= size_thresh) {
+          link = {"source": findNode(source), "target": findNode(target), "value": value}
+          links.push(link);
+        }
+        
     };
 
     this.removeLink = function (source, target) {
@@ -590,7 +673,7 @@ function myGraph() {
         }
     };
 
-    this.removeallLinks = function () {
+    this.removeAllLinks = function () {
         links.splice(0, links.length);
         update();
     };
@@ -599,6 +682,42 @@ function myGraph() {
         nodes.splice(0, links.length);
         update();
     };
+
+    window.removeAllLinksBelowThresh = function () {
+        i = 0;
+        while (i < links.length) {
+            source = links[i].source.id
+            target = links[i].target.id
+            source_group = dataset['layer_networks']['data'][time_step]['nodes'][source]['group']
+            target_group = dataset['layer_networks']['data'][time_step]['nodes'][target]['group']
+            source_grp_size = dataset['coms']["c"+source_group]['max_size']
+            target_grp_size = dataset['coms']["c"+target_group]['max_size']
+
+            if (source_grp_size < size_thresh || target_grp_size < size_thresh) {
+                links.splice(i, 1);
+            }
+            else i++;
+        }
+        
+        update();
+    };
+
+    window.removeAllNodesBelowThresh = function () {
+        i = 0
+        while (i < nodes.length) {
+            node = nodes[i].id
+            group = dataset['layer_networks']['data'][time_step]['nodes'][node]['group']
+            grp_size = dataset['coms']["c"+group]['max_size']
+
+            if (grp_size < size_thresh) {
+                nodes.splice(i, 1);
+            }
+            else i++;
+        }
+        
+        update();
+    };
+
 
     var findNode = function (id) {
         for (var i in nodes) {
@@ -630,19 +749,7 @@ function myGraph() {
         .size([width_w2, height_w2])
         .start();
 
-    var update = function () {
-
-        // // Dragging behavior
-        // var drag = force.drag()
-        //   .on("dragstart", dragstart);
-
-        // function dragstart(d) {
-        //   d3.select(this).classed("fixed", d.fixed = true);
-        // }
-
-        // function dblclick(d) {
-        //   d3.select(this).classed("fixed", d.fixed = false);
-        // }
+    window.update = function () {
 
         // Links
         var link = g.selectAll(".link")
@@ -800,7 +907,9 @@ function myGraph() {
 
 
 var focusColor = function () {
-    d3.selectAll("circle")
+    size = dataset['coms'][focus_label]['max_size']
+    if (size >= size_thresh) {
+      d3.selectAll("circle")
         .transition()
         .duration(200)
         .attr("fill", function(d, i) {
@@ -830,7 +939,9 @@ var focusColor = function () {
                     return 0.1
                 }
         })
+    }
 };
+
 
 var defaultColor = function () {
     d3.selectAll("circle")
@@ -875,6 +986,7 @@ var defaultColor = function () {
             }
         })
 };
+
 
 function updateGraph(dat) {
 
@@ -950,6 +1062,7 @@ function updateGraph(dat) {
     }
 }
 
+
 var union = function(arr1, arr2) {
     var r = arr1.slice(0);
     arr2.forEach(function(i) { if (r.indexOf(i) < 0) r.push(i); });
@@ -957,7 +1070,7 @@ var union = function(arr1, arr2) {
 };
 
 var intersec = function(arr1, arr2) {
-    return arr1.filter(function(i) {return arr2.indexOf(i) != -1;});
+    return arr1.filter(function(i) {return arr2.indexOf(i) != -1;}); 
 }
 
 var diff = function(arr1, arr2) {
@@ -973,44 +1086,4 @@ function keepNodesOnTop() {
         var gnode = this.parentNode;
         gnode.parentNode.appendChild(gnode);
     });
-}
-
-function rgb2hsv () {
-    var rr, gg, bb,
-        r = arguments[0] / 255,
-        g = arguments[1] / 255,
-        b = arguments[2] / 255,
-        h, s,
-        v = Math.max(r, g, b),
-        diff = v - Math.min(r, g, b),
-        diffc = function(c){
-            return (v - c) / 6 / diff + 1 / 2;
-        };
-
-    if (diff == 0) {
-        h = s = 0;
-    } else {
-        s = diff / v;
-        rr = diffc(r);
-        gg = diffc(g);
-        bb = diffc(b);
-
-        if (r === v) {
-            h = bb - gg;
-        }else if (g === v) {
-            h = (1 / 3) + rr - bb;
-        }else if (b === v) {
-            h = (2 / 3) + gg - rr;
-        }
-        if (h < 0) {
-            h += 1;
-        }else if (h > 1) {
-            h -= 1;
-        }
-    }
-    return {
-        h: Math.round(h * 360),
-        s: Math.round(s * 100),
-        v: Math.round(v * 100)
-    };
 }

@@ -75,8 +75,10 @@ p.sidebar-text {
     background: #BABABA;
 }
 
-
-
+#myButtonGroup {
+    width: 100%;
+    margin-top: 10px;
+}
 
 
 
