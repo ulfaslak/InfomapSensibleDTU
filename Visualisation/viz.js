@@ -412,7 +412,7 @@ var polygons = function() {
           removeAllNodesBelowThresh();
       });
 
-  // Time step box (init)
+  // Time step band (init)
   svg_w1.selectAll("time_step_box")
       .data(["dummy"])
       .enter()

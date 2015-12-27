@@ -76,10 +76,12 @@ p.sidebar-text {
     position: fixed;
     float: right;
     width: 32vw;
-    height: 10%;
     margin-right: 12px;
     right: 0%;
     top: 40vw;
+    bottom:0;
+    overflow-y: scroll;
+
 }
 
 #ex6Slider .slider-selection {
