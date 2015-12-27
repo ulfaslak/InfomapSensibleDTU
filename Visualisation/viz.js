@@ -409,6 +409,7 @@ var polygons = function() {
           })
             .attr("y", function(d) { return yScale(time_step-1) })
           updateGraph(dat)
+          removeAllNodesBelowThresh();
       });
 
   // Time step box (init)
