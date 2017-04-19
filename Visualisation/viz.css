@@ -1,0 +1,105 @@
+.d3-tip {
+    line-height: 1;
+    font-weight: bold;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    border-radius: 2px;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+    box-sizing: border-box;
+    display: inline;
+    font-size: 12px;
+    width: 100%;
+    line-height: 1;
+    color: rgba(0, 0, 0, 0.8);
+    content: "\25BC";
+    position: absolute;
+    text-align: center;
+}
+
+/* Style northward tooltips differently */
+.d3-tip.n:after {
+    margin: -1px 0 0 0;
+    top: 100%;
+    left: 0;
+}
+
+line {
+    stroke-width: 1;
+    stroke: black;
+    opacity: 0.3;
+}
+
+.tick {
+    font-size: 11px;
+    font-family: sans-serif;
+    color: black;
+    opacity: 0.25;
+}
+
+.lead {
+    font-size: 12px;
+}
+
+p.sidebar-text {
+    color: grey;
+}
+
+
+#w1 {
+    position: fixed;
+    float: left;
+    width: 50%;
+    height: 100%;
+    margin: 5px;
+}
+#w2 {
+    position: fixed;
+    float: right;
+    width: 32%;
+    height: 32%;
+    margin: 5px;
+    right: 1%;
+}
+#w3 {
+    position: fixed;
+    float: right;
+    width: 32vw;
+    margin: 10px;
+    right: 0%;
+    top: 33vw;
+}
+#w4 {
+    position: fixed;
+    float: right;
+    width: 32vw;
+    margin-right: 12px;
+    right: 0%;
+    top: 40vw;
+    bottom:0;
+    overflow-y: scroll;
+
+}
+
+#ex6Slider .slider-selection {
+    background: #BABABA;
+}
+
+#myButtonGroup {
+    width: 100%;
+    margin-top: 10px;
+}
+
+
+
+
+
+
+
+
+
+
+

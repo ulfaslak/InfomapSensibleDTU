@@ -1,0 +1,1 @@
+This dataset is obtained from sociopatterns.org. Due citation is "Data on face-to-face contacts in an office building suggest a low-cost vaccination strategy based on community linkers", M. Génois et al., Network Science 3, 326 (2015)."

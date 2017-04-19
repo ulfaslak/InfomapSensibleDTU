@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>DTU Communities</title>
+
+    <script src="libs/d3.min.js"></script>
+    <script src="libs/jquery.js"></script>
+    <script src="libs/d3-tip.js"></script>
+    <script src="libs/bootstrap/js/tab.js"></script>
+    <script src="libs/bootstrap/js/slider.js"></script>
+    <script src='libs/spin.min.js'></script> 
+    
+    <link href="libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="libs/bootstrap/css/bootstrap-slider.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="./viz.css">
+
+  </head>
+  <body>
+
+<div style="width: 100%; overflow: hidden;">
+    <div id='w1'></div>
+    <div id='w2'></div>
+    <div id='w3'>
+
+      <!-- Slider (smallest allowed group size) -->
+      <input id="ex6" data-slider-id='ex6Slider' type="text" data-slider-min="2" data-slider-max="10" data-slider-step="1" data-slider-value="5"/>
+
+      <!-- Radio buttons (day of week) -->
+      <div class="btn-group btn-group-justified" id="myButtonGroup" data-toggle="buttons">
+        <label class="btn btn-default active">
+            <input type="radio" id="datasetMon" name="quality[25]" checked="checked" value="1" /> Mon
+        </label> 
+        <label class="btn btn-default">
+            <input type="radio" id="datasetTue" name="quality[25]" value="2" /> Tue
+        </label> 
+        <label class="btn btn-default">
+            <input type="radio" id="datasetWed" name="quality[25]" value="3" /> Wed
+        </label> 
+        <label class="btn btn-default">
+            <input type="radio" id="datasetThu" name="quality[25]" value="4" /> Thu
+        </label> 
+        <label class="btn btn-default">
+            <input type="radio" id="datasetFri" name="quality[25]" value="5" /> Fri
+        </label>
+        <label class="btn btn-default">
+            <input type="radio" id="datasetSat" name="quality[25]" value="6" /> Sat
+        </label>
+        <label class="btn btn-default">
+            <input type="radio" id="datasetSun" name="quality[25]" value="7" /> Sun
+        </label>
+    </div>
+
+    </div>
+
+    <div id='w4'>
+
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+          <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">About</a></li>
+          <li role="presentation"><a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">Guidebook</a></li>
+        </ul>
+
+        <!-- Tab panes -->
+        <div class="tab-content">
+          <div role="tabpanel" class="tab-pane active" id="home">
+            <br>
+            <p class='sidebar-text'>
+            This visualization shows how university students flow through social communities throughout a day. In the left panel you see how student gatherings stretch out over time and above is a network showing face-to-face connections in the 5 minute time bin marked with a blue ribbon on the left, initiated around 9 AM.
+
+            <br><br>
+            The data source consists of face-to-face meetings between freshman students, during the first week of a study period where each students attends the same course with the same people every day. Each interaction is given a timestamp, such that the dataset describes a temporal network. If you compare different days you'll notice that many of the same communities are detected each day.
+
+            <br><br>
+            Interactions are inferred from bluetooth signals measured between students' phones where only signals greater than -80 dB, corresponding to a distance of approximately 1.5 meters, are recorded. There are 628 unique students in this temporal network, which is a small subset of <a href="http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0095978">a greater dataset</a> which contains multiple interaction channels (face-to-face, SMS, calls, Facebook posts, GPS-location, Wi-Fi, screen) over 2.5 years for approx. 1000 students at the Technical University of Denmark. 
+
+            <br><br>
+            Communities are inferred using Infomap, with a special interlayer linking strategy that scales the link weights between two states of the same node by the Jensen-Shannon divergence of the neighborhoods in their respective layers. See the '--multiplex-js-relax-rate' option on the <a href="http://www.mapequation.org/code.html">Infomap documentation page</a> for reference. 
+
+            <br><br>
+            For optimal performance, run visualization in Google Chrome. The code is available on <a href="https://github.com/ulfaslak/InfomapSensibleDTU/tree/master/Visualisation">Github</a>. Please send questions and comments to <a href="http://ulfaslak.com/">Ulf Aslak</a>.
+          </p>
+          </div>
+          <div role="tabpanel" class="tab-pane" id="profile">
+            <br>
+            <p class='sidebar-text'>Try hovering over a community-strip on the left. This highlights other communities proportionally to how many members they share with the reference community. Now click it! You can move the curser around and hover over visible communities to see how similar they are to the one you clicked.
+
+            <br><br>
+
+            Play around with the <kbd>up</kbd> and <kbd>down</kbd> arrow keys. This changes the position of the blue ribbon in the left panel and updates the network to show interactions at a different time. Pan or zoom on the graph to manipulate its location. Double click a node to focus on its community as you shuffle through time. Hold <kbd>shift</kbd> for slow motion. Click a time label to jump to a different place in time. 
+
+            <br><br>
+
+            The slider above controls the minimum allowed size for groups in the visualisation. If it is set to 5, groups whose maximum size is lower than this are not shown. Below the slider you can choose to view a different day.
+          </p>
+
+            <table class="table table-striped"> 
+              <thead> 
+                <tr> 
+                  <th>Key</th> 
+                  <th>Description</th> 
+                </tr> 
+              </thead> 
+              <tbody> 
+                <tr> 
+                  <th scope="row"><p>&nbsp;&nbsp;&nbsp;&uarr;</p></th> 
+                  <td>Next time step</td> 
+                </tr> 
+                <tr> 
+                  <th scope="row"><p>&nbsp;&nbsp;&nbsp;&darr;</p></th> 
+                  <td>Previous time step</td> 
+                </tr> 
+                <tr> 
+                  <th scope="row"><p><kbd>shift</kbd> + &uarr;/&darr;</p></th> 
+                  <td>Slow time step</td> 
+                </tr> 
+                <tr> 
+                  <th scope="row"><p><kbd>alt</kbd></p></th> 
+                  <td>Toggle person Ids</td> 
+                </tr> 
+                <tr> 
+                  <th scope="row"><p><kbd>esc</kbd></p></th> 
+                  <td>Revert to normal mode</td> 
+                </tr> 
+              </tbody> 
+            </table>
+
+          </div>
+        </div>
+    </div>
+
+    
+</div>
+
+<script type="text/javascript">
+$('#myTabs a').click(function (e) {
+  e.preventDefault()
+  $(this).tab('show')
+})
+</script>
+
+<script src="./viz.js"></script>
+    
+  </body>
+</html>
